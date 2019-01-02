@@ -13,3 +13,12 @@ print '''
     return 0;
 }
 '''
+
+''' Milestones:
+
+ * Macro calls
+ * Builtin calls
+ * Function calls
+ * Arithmetic
+ * FluidSynth playing
+'''
