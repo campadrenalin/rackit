@@ -48,13 +48,17 @@ static const struct luaL_Reg TopLevel[] = {
     {NULL,NULL} // Sentinel value
 };
 
-int luaopen_audio_lua (lua_State *L) {
-    luaL_newlib(L, TopLevel);
-    luaL_newmetatable(L, "Buffer");
-    luaL_setfuncs(L, BufferMetatable, 0);
+void register_class(lua_State *L, const char *name, const struct luaL_Reg methods[]) {
+    luaL_newmetatable(L, name);
+    luaL_setfuncs(L, methods, 0);
     lua_pushstring(L, "__index");
     lua_pushvalue(L, -2);
     lua_settable(L, -3);
     lua_pop(L, 1);
+}
+
+int luaopen_audio_lua (lua_State *L) {
+    luaL_newlib(L, TopLevel);
+    register_class(L, "Buffer", BufferMetatable);
     return 1;
 }
