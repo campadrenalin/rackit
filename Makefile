@@ -6,5 +6,5 @@ a.out: src.txt gen.py
 
 .PHONY: audio
 audio: audio.cpp
-	clang audio.cpp -g -I/Library/Frameworks/SDL2.framework/ -lSDL2 -o audio
+	clang audio.cpp -std=c++17 -I/Library/Frameworks/SDL2.framework/ -lSDL2 -o audio
 	time ./audio
