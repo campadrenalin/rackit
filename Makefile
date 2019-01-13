@@ -13,4 +13,4 @@ audio_lua.so: audio_lua.c
 	clang audio_lua.c -shared -o audio_lua.so -fPIC -llua -I/usr/local/include/lua
 
 audio_lua: audio_lua.so
-	@lua
+	lua audio_test.lua
