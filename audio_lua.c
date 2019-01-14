@@ -47,13 +47,28 @@ const SDL_AudioFormat FORMAT_WANTED = AUDIO_S16SYS;
 typedef Sint16 FORMAT;
 Buffer master;
 
+typedef void(*ActorCallback)(void*, int);
+typedef struct {
+    void *data;
+    ActorCallback callback;
+} Actor;
+
+int num_actors;
+Actor actors[200];
+
+void Actor_append(void *data, ActorCallback callback) {
+    Actor a = { data, callback };
+    actors[num_actors++] = a;
+}
+
 typedef struct {
     double phase;
     double freq;
     Buffer *out;
 } OscSine;
 
-void OscSine_process(OscSine *osc, int length) {
+void OscSine_process(void *raw_osc, int length) {
+    OscSine *osc = raw_osc;
     Buffer *out = osc->out;
     double p = 0;
     double f = osc->freq*TAU;
@@ -66,7 +81,28 @@ void OscSine_process(OscSine *osc, int length) {
     // SDL_Log("Phase: %f", osc->phase);
 }
 
-OscSine wave = {0, 440, &master};
+static int OscSine_new(lua_State *L) {
+    double freq = 440;
+    if (lua_gettop(L) > 0) {
+        freq = luaL_checknumber(L, 1);
+    }
+
+    void *userdata = lua_newuserdata(L, sizeof(OscSine));
+    OscSine *osc = userdata;
+    osc->phase = 0;
+    osc->freq = freq;
+    osc->out = &master;
+    Actor_append(osc, &OscSine_process);
+
+    luaL_getmetatable(L, "OscSine");
+    lua_setmetatable(L, -2);
+    return 1;
+}
+
+static const struct luaL_Reg OscSineMetatable[] = {
+    // {"peek", buffer_peek},
+    {NULL,NULL} // Sentinel value
+};
 
 #include "time.h"
 void audio_callback(void *user_data, Uint8 *raw_buffer, int bytes) {
@@ -77,7 +113,11 @@ void audio_callback(void *user_data, Uint8 *raw_buffer, int bytes) {
 
     clock_gettime(CLOCK_MONOTONIC, &start);
     SDL_zero(master);
-    OscSine_process(&wave, length);
+    for (int i=0; i<num_actors; i++) {
+        Actor actor = actors[i];
+        actor.callback(actor.data, length);
+    }
+    // OscSine_process(&wave, length);
     for (int i=0; i<length; i++)
         buffer[i] = master[i]*AMPLITUDE;
     clock_gettime(CLOCK_MONOTONIC, &end);
@@ -139,6 +179,7 @@ static const struct luaL_Reg TopLevel[] = {
     {"sdl_pause",  sdl_pause},
     {"sdl_finish", sdl_finish},
     {"Buffer", new_buffer},
+    {"OscSine", OscSine_new},
     {NULL,NULL} // Sentinel value
 };
 
@@ -154,5 +195,6 @@ void register_class(lua_State *L, const char *name, const struct luaL_Reg method
 int luaopen_audio_lua (lua_State *L) {
     luaL_newlib(L, TopLevel);
     register_class(L, "Buffer", BufferMetatable);
+    register_class(L, "OscSine", OscSineMetatable);
     return 1;
 }

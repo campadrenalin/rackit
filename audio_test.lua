@@ -10,6 +10,7 @@ assert(buf:peek() == 32, "First element is 32")
 
 print("Playing sound")
 lib.sdl_init()
+lib.OscSine()
 lib.sdl_play(1000)
 lib.sdl_finish()
 print("Tests pass - OK")
