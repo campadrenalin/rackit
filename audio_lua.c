@@ -45,7 +45,6 @@ const int SAMPLE_RATE = 44100;
 const double sr = SAMPLE_RATE;
 const SDL_AudioFormat FORMAT_WANTED = AUDIO_S16SYS;
 typedef Sint16 FORMAT;
-Buffer master;
 
 typedef void(*ActorCallback)(void*, int);
 typedef struct {
@@ -60,6 +59,36 @@ void Actor_append(void *data, ActorCallback callback) {
     Actor a = { data, callback };
     actors[num_actors++] = a;
 }
+
+typedef struct {
+    double amount;
+    Buffer *input;
+} MixInput;
+
+typedef struct {
+    int n_ins;
+    MixInput ins[500];
+    Buffer *out;
+} Mixer;
+
+void Mixer_process(void *raw_mixer, int length) {
+    Mixer *m = raw_mixer;
+    Buffer *out = m->out;
+    SDL_zero(*out);
+    for (int in=0; in<m->n_ins; in++) {
+        MixInput mi = m->ins[in];
+        for (int i=0; i<length; i++) 
+            (*out)[i] += mi.amount * (*mi.input)[i];
+    }
+}
+
+void Mixer_append(Mixer *m, double amount, Buffer *buf) {
+    MixInput mi = { amount, buf };
+    m->ins[m->n_ins++] = mi;
+}
+
+Buffer buf_master;
+Mixer mix_master = { 0, {}, &buf_master };
 
 typedef struct {
     double phase;
@@ -83,16 +112,22 @@ void OscSine_process(void *raw_osc, int length) {
 
 static int OscSine_new(lua_State *L) {
     double freq = 440;
-    if (lua_gettop(L) > 0) {
+    if (lua_gettop(L) >= 1)
         freq = luaL_checknumber(L, 1);
+    if (lua_gettop(L) >= 2) {
+        // Buffer provided
+    } else {
+        new_buffer(L);
     }
 
     void *userdata = lua_newuserdata(L, sizeof(OscSine));
     OscSine *osc = userdata;
     osc->phase = 0;
     osc->freq = freq;
-    osc->out = &master;
+    osc->out = lua_touserdata(L, -2);
+
     Actor_append(osc, &OscSine_process);
+    Mixer_append(&mix_master, 1, osc->out);
 
     luaL_getmetatable(L, "OscSine");
     lua_setmetatable(L, -2);
@@ -112,14 +147,14 @@ void audio_callback(void *user_data, Uint8 *raw_buffer, int bytes) {
     int length = bytes/2;
 
     clock_gettime(CLOCK_MONOTONIC, &start);
-    SDL_zero(master);
     for (int i=0; i<num_actors; i++) {
         Actor actor = actors[i];
         actor.callback(actor.data, length);
     }
+    Mixer_process(&mix_master, length);
     // OscSine_process(&wave, length);
     for (int i=0; i<length; i++)
-        buffer[i] = master[i]*AMPLITUDE;
+        buffer[i] = buf_master[i]*AMPLITUDE;
     clock_gettime(CLOCK_MONOTONIC, &end);
 
     time_t seconds = end.tv_sec - start.tv_sec;
