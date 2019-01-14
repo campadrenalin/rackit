@@ -2,13 +2,6 @@
 #include "lualib.h"
 #include "lauxlib.h"
 
-static int reverse (lua_State *L) {
-    int n_args = lua_gettop(L);
-    for (int i = n_args; i>0; i--)
-        lua_pushvalue(L, i);
-    return n_args;
-}
-
 static const int BUFFER_SIZE = 2048;
 typedef double Buffer[BUFFER_SIZE];
 
@@ -42,8 +35,75 @@ static const struct luaL_Reg BufferMetatable[] = {
     {NULL,NULL} // Sentinel value
 };
 
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_audio.h>
+const int AMPLITUDE = 15000;
+const int SAMPLE_RATE = 44100;
+
+int sdl_err(lua_State *L, const char* fmt) {
+    return luaL_error(L, fmt, SDL_GetError());
+}
+
+#include "time.h"
+void audio_callback(void *user_data, Uint8 *raw_buffer, int bytes) {
+    struct timespec start, end;
+    clock_gettime(CLOCK_MONOTONIC, &start);
+
+    double *buffer = (double*)raw_buffer;
+    int length = bytes / sizeof(double);
+
+    for (int i=0; i<length; i++) {
+        buffer[i] = 0;
+    }
+
+    clock_gettime(CLOCK_MONOTONIC, &end);
+    time_t seconds = end.tv_sec - start.tv_sec;
+    long nanos = (seconds * 1e9)  + end.tv_nsec - start.tv_nsec;
+    SDL_Log("Produced %d samples in %ld nanoseconds", length, nanos);
+}
+
+static int sdl_init (lua_State *L) {
+    if (SDL_Init(SDL_INIT_AUDIO) != 0)
+        return sdl_err(L, "Failed to initialize SDL: %s");
+
+    SDL_AudioSpec want, have;
+    SDL_zero(want);
+    want.freq = SAMPLE_RATE;
+    want.format = AUDIO_F32SYS;
+    want.channels = 1;
+    want.samples = BUFFER_SIZE;
+    want.callback = audio_callback;
+    if (SDL_OpenAudio(&want, &have) != 0)
+        return sdl_err(L, "Failed to open audio: %s");
+    if (want.format != have.format)
+        return sdl_err(L, "Failed to get the desired AudioSpec");
+    return 0;
+}
+
+static int sdl_play(lua_State *L) {
+    SDL_PauseAudio(0);
+    if (lua_gettop(L) == 1) {
+        SDL_Delay((int)luaL_checknumber(L, 1));
+        SDL_PauseAudio(1);
+    }
+    return 0;
+}
+
+static int sdl_pause(lua_State *L) {
+    SDL_PauseAudio(1);
+    return 0;
+}
+
+static int sdl_finish(lua_State *L) {
+    SDL_CloseAudio();
+    return 0;
+}
+
 static const struct luaL_Reg TopLevel[] = {
-    {"reverse", reverse},
+    {"sdl_init",   sdl_init},
+    {"sdl_play",   sdl_play},
+    {"sdl_pause",  sdl_pause},
+    {"sdl_finish", sdl_finish},
     {"Buffer", new_buffer},
     {NULL,NULL} // Sentinel value
 };
