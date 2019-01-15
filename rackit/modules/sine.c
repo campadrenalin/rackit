@@ -20,35 +20,26 @@ void OscSine_process(void *raw_osc, int length) {
     // SDL_Log("Phase: %f", osc->phase);
 }
 
+void * get_table_userdata(lua_State *L, int pos) {
+    lua_getfield(L, pos, "_userdata"); // +struct
+    void *p = lua_touserdata(L, -1);
+    lua_pop(L, 1); // -struct
+    return p;
+}
+
 static int OscSine_set_freq(lua_State *L) {
     // ... | osc_table | freq
-    double freq = luaL_checknumber(L, -1);
-    lua_setfield(L, -2, "freq");
-    // ... | osc_table
-
-    lua_getfield(L, -1, "_userdata");
-    // ... | osc_table | osc_struct
-    void *userdata = lua_touserdata(L, -1);
-    OscSine *osc = userdata;
-    lua_pop(L, 1);
-    // .. | osc_table
-
-    osc->freq = freq; // Set in struct
+    OscSine *osc = get_table_userdata(L, -2);
+    osc->freq = luaL_checknumber(L, -1); // Set in struct
+    lua_setfield(L, -2, "freq"); // -freq
     return 0;
 }
 
 static int OscSine_set_buffer(lua_State *L) {
     // ... | osc_table | buf
-    Buffer *buf = lua_touserdata(L, -1);
-    lua_setfield(L, -2, "buffer");
-    // ... | osc_table
-
-    lua_getfield(L, -1, "_userdata");
-    // ... | osc_table | osc_struct
-    OscSine *osc = lua_touserdata(L, -1);
-    osc->out = buf; // Set in struct
-    lua_pop(L, 1);
-    // .. | osc_table
+    OscSine *osc = get_table_userdata(L, -2);
+    osc->out = lua_touserdata(L, -1); // Set in struct
+    lua_setfield(L, -2, "buffer"); // -buf
     return 0;
 }
 
