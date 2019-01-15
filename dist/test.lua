@@ -16,7 +16,7 @@ sin2 = lib.OscSine(450)
 assert(sin1.freq == 440)
 sin1.freq = sin1.freq * 2;
 assert(sin1.freq == 880)
-assert(type(sin1.buffer) == 'userdata')
+assert(type(sin1.out) == 'userdata')
 
 print("Playing sound")
 for freq=880,440,-10 do
