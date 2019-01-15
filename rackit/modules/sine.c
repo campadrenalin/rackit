@@ -61,10 +61,10 @@ static int OscSine_new(lua_State *L) {
         Buffer_new(L, 0); // Blank buffer if not provided
 
     // freq | buf
-    lua_createtable(L, 0, 3);
-    // freq | buf | osc_table
+    lua_createtable(L, 0, 3); // +osc_table
     luaL_getmetatable(L, "OscSine"); // +metatable
     lua_setmetatable(L, -2); // -metatable
+    // freq | buf | osc_table
 
     OscSine *osc = lua_newuserdata(L, sizeof(OscSine)); // +osc_struct
     lua_setfield(L, -2, "_userdata"); // -osc_struct
@@ -89,3 +89,9 @@ static const struct luaL_Reg OscSineMetatable[] = {
     {"__newindex", OscSine_meta_newindex},
     {NULL,NULL} // Sentinel value
 };
+
+void OscSine_register(lua_State *L) {
+    luaL_newmetatable(L, "OscSine");   // +mt
+    luaL_setfuncs(L, OscSineMetatable, 0);
+    lua_pop(L, 1); // -mt
+}

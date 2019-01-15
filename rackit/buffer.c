@@ -27,3 +27,15 @@ static int buffer_peek (lua_State *L) {
     lua_pushnumber(L, (*buf)[0]);
     return 1;
 }
+
+void Buffer_register(lua_State *L) {
+    luaL_newmetatable(L, "Buffer");   // +mt
+
+    // Self-index
+    lua_pushstring(L, "__index"); // +"__index"
+    lua_pushvalue(L, -2);         // +mt
+    lua_settable(L, -3);          // -"__index" -mt
+
+    luaL_setfuncs(L, BufferMetatable, 0);
+    lua_pop(L, 1); // -mt
+}
