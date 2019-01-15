@@ -8,10 +8,14 @@ assert(buf:peek() == 0, "First element is zero")
 buf = lib.Buffer(32)
 assert(buf:peek() == 32, "First element is 32")
 
-print("Playing sound")
 lib.sdl_init()
-lib.OscSine()
-lib.OscSine(450)
+
+sin1 = lib.OscSine(440)
+sin2 = lib.OscSine(450)
+assert(sin1.freq == 440)
+assert(type(sin1.buffer) == 'userdata')
+
+print("Playing sound")
 lib.sdl_play(1000)
 lib.sdl_finish()
 print("Tests pass - OK")
