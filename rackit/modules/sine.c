@@ -20,16 +20,6 @@ void OscSine_process(void *raw_osc, int length) {
     // SDL_Log("Phase: %f", osc->phase);
 }
 
-void print_stack(lua_State *L) {
-    int n = lua_gettop(L); //number of arguments
-    SDL_Log("Printing stack (%d items)", n);
-    for (int i=1; i <= n; i++) {
-        int t = lua_type(L, i);
-        SDL_Log("%i => <%s> %s", i, lua_typename(L, t), lua_tostring(L, i));
-    }
-    SDL_Log("---");
-}
-
 static int OscSine_set_freq(lua_State *L) {
     // ... | osc_table | freq
     double freq = luaL_checknumber(L, -1);

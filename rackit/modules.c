@@ -8,6 +8,16 @@ const double sr = SAMPLE_RATE;
 const SDL_AudioFormat FORMAT_WANTED = AUDIO_S16SYS;
 typedef Sint16 FORMAT;
 
+void print_stack(lua_State *L) {
+    int n = lua_gettop(L); //number of arguments
+    SDL_Log("Printing stack (%d items)", n);
+    for (int i=1; i <= n; i++) {
+        int t = lua_type(L, i);
+        SDL_Log("%i => <%s> %s", i, lua_typename(L, t), lua_tostring(L, i));
+    }
+    SDL_Log("---");
+}
+
 #include "modules/actor.c"
 #include "modules/mixer.c"
 
