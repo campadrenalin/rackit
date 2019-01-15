@@ -290,7 +290,7 @@ void register_class(lua_State *L, const char *name, const struct luaL_Reg method
     lua_pop(L, 1);
 }
 
-int luaopen_audio_lua (lua_State *L) {
+int luaopen_rackit (lua_State *L) {
     luaL_newlib(L, TopLevel);
     register_class(L, "Buffer", BufferMetatable);
     register_class(L, "OscSine", OscSineMetatable);

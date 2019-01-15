@@ -1,4 +1,4 @@
-lib = require "audio_lua"
+lib = require "rackit"
 
 buf = lib.Buffer()
 assert(type(buf) == 'userdata', "Buffer is a userdata")

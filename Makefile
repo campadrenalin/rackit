@@ -1,15 +1,8 @@
-.PHONY: audio_lua
-audio_lua: audio_lua.so
-	lua audio_test.lua
+.PHONY: rackit_test
+rackit_test: dist/rackit.so
+	@cd dist; lua test.lua
 
-audio_lua.so: audio_lua.c
-	clang audio_lua.c -shared -o audio_lua.so \
+dist/rackit.so: rackit/modules.c
+	clang rackit/modules.c -shared -o dist/rackit.so \
 		-fPIC -llua -I/usr/local/include/lua \
 		-I/Library/Frameworks/SDL2.framework/ -lSDL2
-
-run: a.out
-	./a.out
-
-a.out: src.txt gen.py
-	@cat src.txt | python gen.py | clang -x c++ -
-
