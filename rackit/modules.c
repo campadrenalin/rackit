@@ -18,6 +18,13 @@ void print_stack(lua_State *L) {
     SDL_Log("---");
 }
 
+void * get_table_userdata(lua_State *L, int pos) {
+    lua_getfield(L, pos, "_userdata"); // +struct
+    void *p = lua_touserdata(L, -1);
+    lua_pop(L, 1); // -struct
+    return p;
+}
+
 #include "modules/actor.c"
 #include "modules/mixer.c"
 

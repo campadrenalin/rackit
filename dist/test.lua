@@ -12,10 +12,16 @@ lib.sdl_init()
 
 sin1 = lib.OscSine(440)
 sin2 = lib.OscSine(450)
+
 assert(sin1.freq == 440)
+sin1.freq = sin1.freq * 2;
+assert(sin1.freq == 880)
 assert(type(sin1.buffer) == 'userdata')
 
 print("Playing sound")
-lib.sdl_play(1000)
+for freq=880,440,-1 do
+    sin1.freq = freq
+    lib.sdl_play(10)
+end
 lib.sdl_finish()
 print("Tests pass - OK")
