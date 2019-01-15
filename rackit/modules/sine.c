@@ -20,35 +20,25 @@ void OscSine_process(void *raw_osc, int length) {
     // SDL_Log("Phase: %f", osc->phase);
 }
 
-static int OscSine_meta_newindex(lua_State *L) {
-    // osc_table | index | value
-    OscSine *osc = get_table_userdata(L, -3);
-    const char *index = luaL_checkstring(L, -2);
-
-    if (strncmp(index, "freq", 4) == 0) {
-        osc->freq = luaL_checknumber(L, -1); // Set in struct
-        lua_setfield(L, -3, "_freq"); // -value
-    } else if (strncmp(index, "buffer", 6) == 0) {
-        osc->out = lua_touserdata(L, -1); // Set in struct
-        lua_setfield(L, -3, "_buffer"); // -value
-    } else {
-        lua_rawset(L, -3);
-    }
-
-    return 0;
+void OscSine_set_freq(lua_State *L, void *userdata) {
+    OscSine *osc = userdata;
+    osc->freq = luaL_checknumber(L, -1);
+}
+void OscSine_set_buffer(lua_State *L, void *userdata) {
+    OscSine *osc = userdata;
+    osc->out = lua_touserdata(L, -1);
 }
 
+static const NativeField OscSineFields[] = {
+    {"freq",   "_freq",   OscSine_set_freq},
+    {"buffer", "_buffer", OscSine_set_buffer},
+    {NULL,NULL}, // Sentinel value
+};
 static int OscSine_meta_index(lua_State *L) {
-    // osc_table | index
-    const char *index = luaL_checkstring(L, 2);
-    if (strncmp(index, "freq", 4) == 0) {
-        lua_getfield(L, -2, "_freq");
-    } else if (strncmp(index, "buffer", 6) == 0) {
-        lua_getfield(L, -2, "_buffer");
-    } else {
-        lua_rawget(L, 1);
-    }
-    return 1;
+    return native_index(L, OscSineFields);
+}
+static int OscSine_meta_newindex(lua_State *L) {
+    return native_newindex(L, OscSineFields);
 }
 
 static int OscSine_new(lua_State *L) {

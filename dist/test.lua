@@ -19,9 +19,9 @@ assert(sin1.freq == 880)
 assert(type(sin1.buffer) == 'userdata')
 
 print("Playing sound")
-for freq=880,440,-1 do
+for freq=880,440,-10 do
     sin1.freq = freq
-    lib.sdl_play(10)
+    lib.sdl_play(100)
 end
 lib.sdl_finish()
 print("Tests pass - OK")
