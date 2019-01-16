@@ -18,6 +18,16 @@ void print_stack(lua_State *L) {
     SDL_Log("---");
 }
 
+void* new_class_table(lua_State *L, const char *name, size_t udsize) {
+    lua_newtable(L); // +table
+    luaL_getmetatable(L, name); // +metatable
+    lua_setmetatable(L, -2); // -metatable
+
+    void *ud = lua_newuserdata(L, udsize); // +osc_struct
+    lua_setfield(L, -2, "_userdata"); // -osc_struct
+    return ud; // Returns pointer to userdata, leaves table on the stack
+}
+
 void * get_table_userdata(lua_State *L, int pos) {
     lua_getfield(L, pos, "_userdata"); // +struct
     void *p = lua_touserdata(L, -1);

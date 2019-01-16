@@ -1,3 +1,4 @@
+#pragma once
 #define write_sample(sample) (*out)[i] = sample
 
 #define GENERATE_CLASS(CLASSNAME) \
@@ -37,3 +38,12 @@
         OscSine *osc = userdata; \
         osc-> name = reader(L, -1); \
     }
+
+#define CONSTRUCTOR_DEFAULTS() PARAMS(_CONSTRUCTOR_DEFAULTS)
+#define _CONSTRUCTOR_DEFAULTS(n, _name, creator) \
+    if (lua_gettop(L) < n) creator;
+
+#define CONSTRUCTOR_APPLYS() PARAMS(_CONSTRUCTOR_APPLYS)
+#define _CONSTRUCTOR_APPLYS(n, name, _creator) \
+    lua_pushvalue(L, n); \
+    lua_setfield(L, -2, #name);
