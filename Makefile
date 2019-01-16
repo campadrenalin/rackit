@@ -1,4 +1,5 @@
-src = $(wildcard rackit/*.c) $(wildcard rackit/modules/*.c)
+src = $(wildcard rackit/*.c) $(wildcard rackit/modules/*.c) \
+      $(wildcard rackit/*.h) $(wildcard rackit/modules/*.h)
 
 .PHONY: rackit_test
 rackit_test: dist/rackit.so
