@@ -9,6 +9,7 @@ static const struct luaL_Reg TopLevel[] = {
     {"sdl_finish", sdl_finish},
     {"Buffer", new_buffer},
     {"OscSine", OscSine_new},
+    {"MixMaster", MixMaster},
     {NULL,NULL} // Sentinel value
 };
 

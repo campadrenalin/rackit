@@ -19,7 +19,7 @@ static int OscSine_new(lua_State *L) {
     OscSine *osc = new_class_table(L, "OscSine", sizeof(OscSine));
     CONSTRUCTOR_APPLYS()
     Actor_append(osc, &OscSine_process);
-    Mixer_append(&mix_master, 1, osc->out);
+    // Mixer_append(&mix_master, 1, osc->out);
     return 1;
 }
 

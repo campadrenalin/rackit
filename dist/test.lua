@@ -12,6 +12,8 @@ lib.sdl_init()
 
 sin1 = lib.OscSine(440)
 sin2 = lib.OscSine(450)
+lib.MixMaster(0.3, sin1.out)
+lib.MixMaster(1, sin2.out)
 
 assert(type(sin1.out) == 'userdata')
 assert(type(sin1.freq) == 'userdata')

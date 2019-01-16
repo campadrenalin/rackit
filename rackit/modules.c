@@ -88,4 +88,12 @@ Buffer* make_buffer(lua_State *L, int i) {
 Buffer buf_master;
 Mixer mix_master = { 0, {}, &buf_master };
 
+static int MixMaster(lua_State *L) {
+    double amount = luaL_checknumber(L, 1);
+    Buffer* buf = lua_touserdata(L, 2);
+    Mixer_append(&mix_master, amount, buf);
+    lua_pop(L, 2);
+    return 0;
+}
+
 #include "modules/sine.c"
