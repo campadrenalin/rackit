@@ -3,7 +3,7 @@
 
 #define FIELDS(ACTION) \
     ACTION(double, phase, luaL_checknumber) \
-    ACTION(Buffer*, freq,  luaL_checknumber) \
+    ACTION(Buffer*, freq, lua_touserdata) \
     ACTION(Buffer*, out,  lua_touserdata)
 
 #define PARAMS(ACTION) \
@@ -15,6 +15,7 @@ GENERATE_CLASS(OscSine)
 
 static int OscSine_new(lua_State *L) {
     CONSTRUCTOR_DEFAULTS()
+    make_buffer(L, 1);
     OscSine *osc = new_class_table(L, "OscSine", sizeof(OscSine));
     CONSTRUCTOR_APPLYS()
     Actor_append(osc, &OscSine_process);
@@ -24,11 +25,12 @@ static int OscSine_new(lua_State *L) {
 
 void OscSine_process(void *raw_osc, int length) {
     OscSine *osc = raw_osc;
-    Buffer *out = osc->out;
+    Buffer *out  = osc->out;
+    Buffer *freq = osc->freq;
     double p = 0;
-    double f = osc->freq*TAU;
     for(int i=0; i<length; i++) {
         double t = (double)i/sr;
+        double f = read_sample(freq)*TAU;
         p = t*f;
         write_sample(sin(osc->phase + p));
     }

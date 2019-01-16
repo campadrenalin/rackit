@@ -1,5 +1,6 @@
 #pragma once
 #define write_sample(sample) (*out)[i] = sample
+#define read_sample(src) (*src)[i]
 
 #define GENERATE_CLASS(CLASSNAME) \
     typedef struct { FIELDS(STRUCT_FIELDS) } CLASSNAME; \

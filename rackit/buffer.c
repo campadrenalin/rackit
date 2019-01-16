@@ -1,7 +1,7 @@
 #include "buffer.h"
 
 void fill_buffer(Buffer *buf, double value) {
-    for (int i=0; i<BUFFER_SIZE-1; i++)
+    for (int i=0; i<BUFFER_SIZE; i++)
         (*buf)[i] = value;
 }
 
@@ -22,10 +22,23 @@ static int new_buffer (lua_State *L) {
 }
 
 static int buffer_peek (lua_State *L) {
-    void *userdata = lua_touserdata(L, -1);
-    Buffer *buf = userdata;
-    lua_pushnumber(L, (*buf)[0]);
+    Buffer *buf = lua_touserdata(L, 1);
+    int index = 0;
+    if (lua_gettop(L) > 1) {
+        index = luaL_checkinteger(L, 2);
+    }
+    lua_pushnumber(L, (*buf)[index]);
     return 1;
+}
+
+static int buffer_fill (lua_State *L) {
+    Buffer *buf = lua_touserdata(L, 1);
+    double value = 0;
+    if (lua_gettop(L) > 1) {
+        value = luaL_checknumber(L, 2);
+    }
+    fill_buffer(buf, value);
+    return 0;
 }
 
 void Buffer_register(lua_State *L) {

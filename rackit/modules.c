@@ -74,6 +74,14 @@ int native_newindex(lua_State *L, const NativeField fields[]) {
     return 0;
 }
 
+Buffer* make_buffer(lua_State *L, int i) {
+    if (lua_isnumber(L, i)) {
+        Buffer_new(L, luaL_checknumber(L, i));
+        lua_replace(L, i);
+    }
+    return lua_touserdata(L, i);
+}
+
 #include "modules/actor.c"
 #include "modules/mixer.c"
 
