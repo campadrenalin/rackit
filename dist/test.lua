@@ -31,9 +31,9 @@ sin2.freq = lfo.out;
     -- sin1.freq:fill(freq)
     -- lib.sdl_play(10)
 -- end
-for power=0,300,1 do
+for power=0,400,1 do
     lfo.scale = power
-    lib.sdl_play(10)
+    lib.sdl_play(20)
 end
 -- lib.sdl_play(2000)
 lib.sdl_finish()

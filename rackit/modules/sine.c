@@ -1,25 +1,33 @@
 #include "math.h"
 #include "classkit.h"
 
-#define FIELDS(ACTION) \
-    ACTION(double, phase, luaL_checknumber) \
-    ACTION(Buffer*, freq, lua_touserdata) \
-    ACTION(Buffer*, out,  lua_touserdata)
+typedef struct {
+    double phase;
+    Buffer *freq, *out;
+} OscSine;
 
-#define PARAMS(ACTION) \
-    ACTION(1, freq,  lua_pushnumber(L, 440)) \
-    ACTION(2, out,   Buffer_new(L, 0)) \
-    ACTION(3, phase, lua_pushnumber(L, 0))
+NF_SETTER(OscSine, phase,  param_double, 0)
+NF_SETTER(OscSine, freq, param_buffer, 440)
+NF_SETTER(OscSine, out,  param_buffer, 0)
 
-GENERATE_CLASS(OscSine)
+static const NativeField OscSineFields[] = {
+    NF(OscSine, phase),
+    NF(OscSine, freq),
+    NF(OscSine, out),
+    {NULL,NULL, NULL},
+};
+CK_BOILERPLATE(OscSine);
 
 static int OscSine_new(lua_State *L) {
-    CONSTRUCTOR_DEFAULTS()
-    make_buffer(L, 1);
-    OscSine *osc = new_class_table(L, "OscSine", sizeof(OscSine));
-    CONSTRUCTOR_APPLYS()
+    OscSine *osc = new_class_table(L, "OscSine", sizeof(OscSine)); // +table
     Actor_append(osc, &OscSine_process);
-    // Mixer_append(&mix_master, 1, osc->out);
+    lua_rotate(L, 1, 1); // Put table on the bottom
+
+    // table | ...params
+    constructor_param(L, 0, "phase");
+    constructor_param(L, 1, "freq");
+    constructor_param(L, 2, "out");
+    lua_settop(L, 1); // Clear any remaining junk
     return 1;
 }
 

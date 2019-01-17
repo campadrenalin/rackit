@@ -6,8 +6,8 @@ typedef struct {
     double center, scale;
 } LFO;
 
-NF_SETTER(LFO, in,  param_buffer)
-NF_SETTER(LFO, out, param_buffer)
+NF_SETTER(LFO, in,  param_buffer, 0)
+NF_SETTER(LFO, out, param_buffer, 0)
 NF_SETTER(LFO, center, param_double, 0)
 NF_SETTER(LFO, scale,  param_double, 1)
 
@@ -22,6 +22,7 @@ CK_BOILERPLATE(LFO);
 
 static int LFO_new(lua_State *L) {
     LFO *lfo = new_class_table(L, "LFO", sizeof(LFO)); // +table
+    Actor_append(lfo, &LFO_process);
     lua_rotate(L, 1, 1); // Put table on the bottom
 
     // table | ...params
@@ -30,8 +31,6 @@ static int LFO_new(lua_State *L) {
     constructor_param(L, 3, "scale");
     constructor_param(L, 0, "out");
     lua_settop(L, 1); // Clear any remaining junk
-
-    Actor_append(lfo, &LFO_process);
     return 1;
 }
 
