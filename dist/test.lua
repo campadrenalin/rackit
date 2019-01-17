@@ -10,7 +10,7 @@ assert(buf:peek() == 32, "First element is 32")
 
 lib.sdl_init()
 
-lfo_osc = lib.OscSine(440/8)
+lfo_osc = lib.OscSaw(440/8)
 lfo = lib.LFO(lfo_osc.out, 440)
 assert(lfo.scale == 1)
 lfo.scale = 80;
