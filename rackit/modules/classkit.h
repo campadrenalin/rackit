@@ -56,6 +56,20 @@
     lua_pushvalue(L, n); \
     lua_setfield(L, -2, #name);
 
+#define OSCILLATE(classname, sample_out) { \
+    classname *osc = raw; \
+    Buffer *out  = osc->out; \
+    Buffer *f_buf = osc->freq; \
+    double p=0, phase=0; \
+    for(int i=0; i<length; i++) { \
+        double freq = read_sample(f_buf); \
+        p += freq/sr; /* Accumulate in small variable for error control */ \
+        phase = osc->phase + p; /* Make running total available */ \
+        write_sample(sample_out); \
+    } \
+    osc->phase = fmod(phase, 1); /* Wrap around regularly, but not every sample */ \
+}
+
 #define CK_BOILERPLATE(ClassName) \
     static int ClassName ## _meta_index(lua_State *L) { \
         return native_index(L, ClassName ## Fields); \

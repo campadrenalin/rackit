@@ -23,17 +23,4 @@ static int OscSine_new(lua_State *L) {
     return 1;
 }
 
-void OscSine_process(void *raw_osc, int length) {
-    OscSine *osc = raw_osc;
-    Buffer *out  = osc->out;
-    Buffer *freq = osc->freq;
-    double p = 0;
-    for(int i=0; i<length; i++) {
-        double t = (double)i/sr;
-        double f = read_sample(freq)*TAU;
-        p = t*f;
-        write_sample(sin(osc->phase + p));
-    }
-    osc->phase += p;
-    // SDL_Log("Phase: %f", osc->phase);
-}
+void OscSine_process(void *raw, int length) OSCILLATE(OscSine, sin(phase*TAU))
