@@ -10,6 +10,7 @@ static const struct luaL_Reg TopLevel[] = {
     {"Buffer", new_buffer},
     {"OscSine", OscSine_new},
     {"OscSaw", OscSaw_new},
+    {"OscSquare", OscSquare_new},
     {"LFO", LFO_new},
     {"MixMaster", MixMaster},
     {NULL,NULL} // Sentinel value
@@ -20,6 +21,7 @@ int luaopen_rackit (lua_State *L) {
     Buffer_register(L);
     OscSine_register(L);
     OscSaw_register(L);
+    OscSquare_register(L);
     LFO_register(L);
     return 1;
 }

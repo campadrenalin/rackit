@@ -98,4 +98,5 @@ static int MixMaster(lua_State *L) {
 
 #include "modules/sine.c"
 #include "modules/saw.c"
+#include "modules/square.c"
 #include "modules/lfo.c"

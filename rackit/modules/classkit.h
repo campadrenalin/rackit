@@ -1,6 +1,8 @@
 #pragma once
 #define write_sample(sample) (*out)[i] = sample
 #define read_sample(src) (*src)[i]
+#define FREQ read_sample(osc->freq)
+#define PW   read_sample(osc->pw)
 
 #define NF(classname, name) \
     {#name, "_" #name, classname ## _set_ ## name }
@@ -23,8 +25,7 @@
     Buffer *f_buf = osc->freq; \
     double p=0, phase=0; \
     for(int i=0; i<length; i++) { \
-        double freq = read_sample(f_buf); \
-        p += freq/sr; /* Accumulate in small variable for error control */ \
+        p += FREQ/sr; /* Accumulate in small variable for error control */ \
         phase = osc->phase + p; /* Make running total available */ \
         write_sample(sample_out); \
     } \
