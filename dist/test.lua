@@ -12,13 +12,18 @@ lib.sdl_init()
 
 -- lfo_osc = lib.OscSquare(440/8)
 -- lfo = lib.LFO(lfo_osc.out, 440)
-lfo_osc = lib.OscSine(0.8)
+lfo_osc = lib.OscSaw(2)
 lfo = lib.LFO(lfo_osc.out, 0.5)
 assert(lfo.scale == 1)
-lfo.scale = 0.2;
+lfo.scale = -0.4;
+
+C = 261.63
+D = 293.66
+E = 329.63
+G = 392.00
 
 sin1 = lib.OscSine(440) --, lfo.out)
-sin2 = lib.OscSquare(440/2, nil, lfo.out)
+sin2 = lib.OscSquare(440/4, nil, lfo.out)
 
 assert(type(sin1.out) == 'userdata')
 assert(type(sin1.freq) == 'userdata')
@@ -40,8 +45,23 @@ function play_ramp(res)
     end
 end
 
+notes = {
+    E, D, C, D, E, E, E, C/2,
+    D, D, D, C/2, E, G, G, C/2,
+    E, D, C, D, E, E, E, C/2,
+    D, D, E, D, C, C, C, C/2,
+}
+function play_notes()
+    lib.MixMaster(1, sin2.out)
+    for i, note in ipairs(notes) do
+        sin2.freq:fill(note)
+        lib.sdl_play(500)
+    end
+end
+
 print("Playing sound")
-play_note()
+-- play_note()
 -- play_ramp(1)
+play_notes()
 lib.sdl_finish()
 print("Tests pass - OK")
