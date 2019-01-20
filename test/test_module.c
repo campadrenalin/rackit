@@ -16,12 +16,12 @@ void test_Module_new(void) {
 }
 
 // Simple ModuleCallbacks for testing purposes
-void Module_process_Count(struct Module *m, int length) {
+DEF_MC(Count) {
     Buffer *out = Module_buffer(m, 0);
     for (int i=0; i<length; i++)
         (*out)[i] = (Sample)i;
 }
-void Module_process_Triple(struct Module *m, int length) {
+DEF_MC(Triple) {
     Buffer *out = Module_buffer(m, 0);
     Buffer *in  = Module_buffer(m, 1);
     for (int i=0; i<length; i++)
@@ -29,8 +29,8 @@ void Module_process_Triple(struct Module *m, int length) {
 }
 
 void test_Module_process(void) {
-    Module *src = Module_new(&Module_process_Count,  1);
-    Module *dst = Module_new(&Module_process_Triple, 2);
+    Module *src = NEW_MODULE(Count,  1);
+    Module *dst = NEW_MODULE(Triple, 2);
     Port_set_patch(&dst->ports[1], src, 0); // Output of src patched to input of dst
     TEST_ASSERT_EQUAL_MESSAGE(0, src->ports[0].buf.buf[12], "Not processed yet");
 

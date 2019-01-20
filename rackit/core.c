@@ -34,7 +34,6 @@ Buffer *Port_find_buffer(Port *p) {
 
 // Module Class ================================================================
 
-#define ModuleSize(num_ports) sizeof(Module) + num_ports*sizeof(Port)
 Module *Module_new(ModuleCallback callback, int num_ports) {
     Module *m = calloc(1, ModuleSize(num_ports));
     m->process_cb = callback;
