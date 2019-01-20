@@ -27,7 +27,27 @@ void test_Port_is_patched(void) {
     TEST_ASSERT_EQUAL_FLOAT_MESSAGE(p.buf.buf[5], 0, "Back to zero");
 }
 
+void test_Port_find_buffer_raw(void) {
+    Port p = {0};
+    Buffer *got = Port_find_buffer(&p);
+    TEST_ASSERT_NOT_NULL(got);
+    TEST_ASSERT_EQUAL(got, &p.buf.buf);
+}
+
+// TODO: Exercise recursive case
+void test_Port_find_buffer_patched(void) {
+    Module *m = Module_new(4);
+    Port p = {0};
+    Port_set_patch(&p, m, 2);
+
+    Buffer *got = Port_find_buffer(&p);
+    TEST_ASSERT_NOT_NULL(got);
+    TEST_ASSERT_EQUAL(got, &m->ports[2].buf.buf);
+}
+
 void test_Port(void) {
     RUN_TEST(test_Port_size);
     RUN_TEST(test_Port_is_patched);
+    RUN_TEST(test_Port_find_buffer_raw);
+    RUN_TEST(test_Port_find_buffer_patched);
 }

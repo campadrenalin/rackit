@@ -12,8 +12,8 @@ void Buffer_fill(Buffer *buf, Sample value) {
 }
 
 // Port Class ==================================================================
-typedef struct { int one;  void *module; int port; } PortPatch;
-typedef struct { int zero; Buffer buf;             } PortBuffer;
+typedef struct { int one;  struct Module *module; int port; } PortPatch;
+typedef struct { int zero; Buffer buf;                      } PortBuffer;
 typedef union _rackit_port {
     int is_patched;
     PortPatch patch;
@@ -40,7 +40,7 @@ typedef union _rackit_module_data {
 } ModuleData;
 
 typedef void(*ModuleCallback) (void *self, int length);
-typedef struct {
+typedef struct Module {
     ModuleCallback process_cb;
     long time;
     ModuleData data;
@@ -54,3 +54,14 @@ Module *Module_new(int num_ports) {
     m->num_ports = num_ports;
     return m;
 }
+
+// TODO: use a header file to get declarations early
+Buffer *Port_find_buffer(Port *p) {
+    if (p->is_patched) {
+        Port *foreign = &p->patch.module->ports[p->patch.port];
+        return Port_find_buffer(foreign);
+    } else {
+        return &(p->buf.buf);
+    }
+}
+
