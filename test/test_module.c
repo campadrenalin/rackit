@@ -39,7 +39,24 @@ void test_Module_process(void) {
     TEST_ASSERT_EQUAL_MESSAGE(36, dst->ports[0].buf.buf[12], "Dst was processed");
 }
 
+void test_Module_Sine(void) {
+    Module *sine = NEW_MODULE(Sine, 2); // out, freq
+    Port_set_constant(&sine->ports[1], 440);
+    Module_process(sine, 100, sine->time+100);
+    Buffer *out = Module_buffer(sine, 0);
+
+    int cursor = 1;
+    for (int i=0; i<100; i++, cursor++)
+        TEST_ASSERT_EQUAL_FLOAT(sin(cursor * 440 * TAU / SR), (*out)[i]);
+
+    // Compute again, and verify that we pick up where we left off
+    Module_process(sine, 100, sine->time+100);
+    for (int i=0; i<100; i++, cursor++)
+        TEST_ASSERT_EQUAL_FLOAT(sin(cursor * 440 * TAU / SR), (*out)[i]);
+}
+
 void test_Module(void) {
     RUN_TEST(test_Module_new);
     RUN_TEST(test_Module_process);
+    RUN_TEST(test_Module_Sine);
 }

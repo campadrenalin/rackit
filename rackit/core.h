@@ -1,9 +1,14 @@
 #pragma once
 #import "stdlib.h"
 
+const double PI = 3.141592653589793238463;
+const double TAU = 2*PI;
+const int SAMPLE_RATE = 44100;
+const double SR = SAMPLE_RATE;
+typedef double Sample;
+
 // Buffer Class ================================================================
 static const int BUFFER_SIZE = 2048;
-typedef double Sample;
 typedef Sample Buffer[2048];
 
 void Buffer_fill(Buffer *buf, Sample value);

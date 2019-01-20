@@ -59,3 +59,20 @@ void Module_process(struct Module *m, int length, long time) {
     m->time = time;
     m->process_cb(m, length);
 }
+
+#define OSCILLATOR(formula) { \
+    Buffer *out, *freq, *pw; \
+    out = Module_buffer(m, 0); \
+    freq = Module_buffer(m, 1); \
+    if (m->num_ports >= 3) \
+        pw = Module_buffer(m, 2); \
+    Sample phase=0, p=0; \
+    for (int i=0; i<length; i++) { \
+        p += (*freq)[i] / SR; \
+        phase = fmod(m->data.phase + p, 1); \
+        (*out)[i] = formula; \
+    } \
+    m->data.phase = phase; \
+}
+
+DEF_MC(Sine) OSCILLATOR(sin(phase * TAU))

@@ -6,7 +6,8 @@ rackit_test: dist/rackit.so
 	@cd dist; lua test.lua
 
 test:
-	clang test/main.c vendor/unity/src/unity.c -I vendor/unity/src -o test/runner.out
+	clang test/main.c vendor/unity/src/unity.c -I vendor/unity/src -o test/runner.out \
+		-I/Library/Frameworks/SDL2.framework/ -lSDL2
 	test/runner.out
 
 clean:
