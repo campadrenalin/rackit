@@ -1,3 +1,6 @@
+#pragma once
+#import "stdlib.h"
+
 // Buffer Class ================================================================
 static const int BUFFER_SIZE = 2048;
 typedef double Sample;
@@ -36,9 +39,18 @@ typedef union _rackit_module_data {
     Sample phase;
 } ModuleData;
 
+typedef void(*ModuleCallback) (void *self, int length);
 typedef struct {
-    void (*process_cb)(void *self, int length);
+    ModuleCallback process_cb;
     long time;
     ModuleData data;
-    Port ports[6];
+    int num_ports;
+    Port ports[];
 } Module;
+
+#define ModuleSize(num_ports) sizeof(Module) + num_ports*sizeof(Port)
+Module *Module_new(int num_ports) {
+    Module *m = calloc(1, ModuleSize(num_ports));
+    m->num_ports = num_ports;
+    return m;
+}
