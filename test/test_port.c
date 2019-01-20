@@ -36,7 +36,7 @@ void test_Port_find_buffer_raw(void) {
 
 // TODO: Exercise recursive case
 void test_Port_find_buffer_patched(void) {
-    Module *m = Module_new(4);
+    Module *m = Module_new(NULL, 4);
     Port p = {0};
     Port_set_patch(&p, m, 2);
 

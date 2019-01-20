@@ -17,7 +17,7 @@ typedef union _rackit_port {
     PortBuffer buf;
 } Port;
 
-void Port_set_patch(Port *p, void *module, int port);
+void Port_set_patch(Port *p, struct Module *module, int port);
 void Port_set_constant(Port *p, Sample value);
 void Port_reset(Port *p);
 
@@ -29,7 +29,7 @@ typedef union _rackit_module_data {
     Sample phase;
 } ModuleData;
 
-typedef void(*ModuleCallback) (void *self, int length);
+typedef void(*ModuleCallback) (struct Module *self, int length);
 typedef struct Module {
     ModuleCallback process_cb;
     long time;
@@ -39,4 +39,6 @@ typedef struct Module {
 } Module;
 
 #define ModuleSize(num_ports) sizeof(Module) + num_ports*sizeof(Port)
-Module *Module_new(int num_ports);
+Module *Module_new(ModuleCallback callback, int num_ports);
+Buffer *Module_buffer(struct Module *self, int n);
+void Module_process(struct Module *m, int length, long time);
