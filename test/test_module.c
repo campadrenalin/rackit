@@ -55,8 +55,22 @@ void test_Module_Sine(void) {
         TEST_ASSERT_EQUAL_FLOAT(sin(cursor * 440 * TAU / SR), (*out)[i]);
 }
 
+void test_Module_FMA(void) {
+    Module *src = NEW_MODULE(Count, 1);
+    Module *fma = NEW_MODULE(FMA, 4);
+    Port_set_patch(&fma->ports[1], src, 0); // in: src.out
+    Port_set_constant(&fma->ports[2], 100); // center: 100
+    Port_set_constant(&fma->ports[3], 2);   // scale: 2
+
+    Buffer *out = Module_buffer(fma, 0);
+    Module_process(fma, 10, fma->time+100);
+    for (int i=0; i<10; i++)
+        TEST_ASSERT_EQUAL_FLOAT(i*2+100, OUT);
+}
+
 void test_Module(void) {
     RUN_TEST(test_Module_new);
     RUN_TEST(test_Module_process);
     RUN_TEST(test_Module_Sine);
+    RUN_TEST(test_Module_FMA);
 }

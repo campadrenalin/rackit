@@ -47,7 +47,3 @@ typedef struct Module {
 Module *Module_new(ModuleCallback callback, int num_ports);
 Buffer *Module_buffer(struct Module *self, int n);
 void Module_process(struct Module *m, int length, long time);
-
-#define MC(name) ModuleCallback_ ## name
-#define DEF_MC(name) void MC(name)(struct Module *m, int length)
-#define NEW_MODULE(callback, size) Module_new(& MC(callback), size)

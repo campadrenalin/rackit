@@ -60,6 +60,13 @@ void Module_process(struct Module *m, int length, long time) {
     m->process_cb(m, length);
 }
 
+#define IN   (*in)[i]
+#define OUT  (*out)[i]
+#define FREQ (*freq)[i]
+#define PW   (*pw)[i]
+#define CENTER (*center)[i]
+#define SCALE  (*scale)[i]
+
 #define OSCILLATOR(formula) { \
     Buffer *out, *freq, *pw; \
     out = Module_buffer(m, 0); \
@@ -68,11 +75,26 @@ void Module_process(struct Module *m, int length, long time) {
         pw = Module_buffer(m, 2); \
     Sample phase=0, p=0; \
     for (int i=0; i<length; i++) { \
-        p += (*freq)[i] / SR; \
+        p += FREQ / SR; \
         phase = fmod(m->data.phase + p, 1); \
-        (*out)[i] = formula; \
+        OUT = formula; \
     } \
     m->data.phase = phase; \
 }
 
-DEF_MC(Sine) OSCILLATOR(sin(phase * TAU))
+#define MC(name) ModuleCallback_ ## name
+#define DEF_MC(name) void MC(name)(struct Module *m, int length)
+#define NEW_MODULE(callback, size) Module_new(& MC(callback), size)
+
+DEF_MC(Sine)   OSCILLATOR(sin(phase * TAU));
+DEF_MC(Saw)    OSCILLATOR(phase*2 -1);
+DEF_MC(Square) OSCILLATOR( (phase>PW) *2 -1 );
+
+DEF_MC(FMA) {
+    Buffer *out    = Module_buffer(m, 0);
+    Buffer *in     = Module_buffer(m, 1);
+    Buffer *center = Module_buffer(m, 2);
+    Buffer *scale  = Module_buffer(m, 3);
+    for (int i=0; i<length; i++)
+        OUT = (IN*SCALE) + CENTER;
+};
