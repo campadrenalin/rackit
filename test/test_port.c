@@ -27,9 +27,7 @@ void test_Port_is_patched(void) {
     TEST_ASSERT_EQUAL_FLOAT_MESSAGE(p.buf.buf[5], 0, "Back to zero");
 }
 
-int main(void) {
-    UNITY_BEGIN();
+void test_Port(void) {
     RUN_TEST(test_Port_size);
     RUN_TEST(test_Port_is_patched);
-    return UNITY_END();
 }

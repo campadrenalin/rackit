@@ -15,8 +15,6 @@ void test_Module_new(void) {
     }
 }
 
-int main(void) {
-    UNITY_BEGIN();
+void test_Module(void) {
     RUN_TEST(test_Module_new);
-    return UNITY_END();
 }

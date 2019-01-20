@@ -12,9 +12,7 @@ void test_Buffer_fill(void) {
         TEST_ASSERT_EQUAL_FLOAT(buf[i], 16.5);
 }
 
-int main(void) {
-    UNITY_BEGIN();
+void test_Buffer(void) {
     RUN_TEST(test_Buffer_size);
     RUN_TEST(test_Buffer_fill);
-    return UNITY_END();
 }
