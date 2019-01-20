@@ -6,10 +6,7 @@ static const int BUFFER_SIZE = 2048;
 typedef double Sample;
 typedef Sample Buffer[2048];
 
-void Buffer_fill(Buffer *buf, Sample value) {
-    for (int i=0; i<BUFFER_SIZE; i++)
-        (*buf)[i] = value;
-}
+void Buffer_fill(Buffer *buf, Sample value);
 
 // Port Class ==================================================================
 typedef struct { int one;  struct Module *module; int port; } PortPatch;
@@ -20,18 +17,11 @@ typedef union _rackit_port {
     PortBuffer buf;
 } Port;
 
-void Port_set_patch(Port *p, void *module, int port) {
-    p->is_patched = 1;
-    p->patch.module = module;
-    p->patch.port = port;
-}
+void Port_set_patch(Port *p, void *module, int port);
+void Port_set_constant(Port *p, Sample value);
+void Port_reset(Port *p);
 
-void Port_set_constant(Port *p, Sample value) {
-    p->is_patched = 0;
-    Buffer_fill(&(p->buf.buf), value);
-}
-
-void Port_reset(Port *p) { Port_set_constant(p, 0); }
+Buffer *Port_find_buffer(Port *p);
 
 // Module Class ================================================================
 
@@ -49,19 +39,4 @@ typedef struct Module {
 } Module;
 
 #define ModuleSize(num_ports) sizeof(Module) + num_ports*sizeof(Port)
-Module *Module_new(int num_ports) {
-    Module *m = calloc(1, ModuleSize(num_ports));
-    m->num_ports = num_ports;
-    return m;
-}
-
-// TODO: use a header file to get declarations early
-Buffer *Port_find_buffer(Port *p) {
-    if (p->is_patched) {
-        Port *foreign = &p->patch.module->ports[p->patch.port];
-        return Port_find_buffer(foreign);
-    } else {
-        return &(p->buf.buf);
-    }
-}
-
+Module *Module_new(int num_ports);

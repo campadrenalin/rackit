@@ -1,5 +1,5 @@
 #include "unity.h"
-#include "../rackit/rework.c"
+#include "../rackit/core.c"
 
 void test_Buffer_size(void) {
     TEST_ASSERT_EQUAL_INT_MESSAGE(sizeof(Buffer), sizeof(Sample)*2048, "Buffer is 2048 samples long.");

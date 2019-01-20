@@ -1,5 +1,5 @@
 #include "unity.h"
-#include "../rackit/rework.c"
+#include "../rackit/core.c"
 
 void test_Module_new(void) {
     // Size is dominated by fallback/output buffer
