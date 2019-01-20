@@ -5,11 +5,15 @@ src = $(wildcard rackit/*.c) $(wildcard rackit/modules/*.c) \
 rackit_test: dist/rackit.so
 	@cd dist; lua test.lua
 
-test: test_buffer
+test: test_buffer test_port
 
 test_buffer:
 	clang test/test_buffer.c vendor/unity/src/unity.c -I vendor/unity/src -o test/buffer.out
 	test/buffer.out
+
+test_port:
+	clang test/test_port.c vendor/unity/src/unity.c -I vendor/unity/src -o test/port.out
+	test/port.out
 
 dist/rackit.so: $(src)
 	time clang rackit/rackit.c -shared -o dist/rackit.so \
