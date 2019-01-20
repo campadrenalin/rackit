@@ -1,1 +1,1 @@
-map ,t :!make<CR>
+map ,t :!make test<CR>

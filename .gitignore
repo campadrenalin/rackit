@@ -2,3 +2,4 @@ a.out
 audio
 *.so
 *.sw[op]
+test/*.out
