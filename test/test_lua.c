@@ -38,7 +38,7 @@ void test_Lua_module_play_sin(void) {
     LUA_EXEC("mod = rk.Module(rk.modules.types.Sine, 0, 440)");
     TEST_LUA_ASSERT("type(mod) == 'userdata'");
     LUA_EXEC("rk.sdl_init()");
-    LUA_EXEC("rk.sdl_play(mod, 1000)");
+    LUA_EXEC("rk.sdl_play(mod, 200)");
     LUA_EXEC("rk.sdl_finish()");
 }
 

@@ -98,4 +98,5 @@ DEF_MC(FMA) {
         OUT = (IN*SCALE) + CENTER;
 };
 
-// TODO: Container Module
+// TODO: Container Module, LFO in particular
+// TODO: ADSR

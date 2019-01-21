@@ -56,6 +56,12 @@ static const struct luaL_Reg TopLevel[] = {
 int luaopen_rackit (lua_State *L) {
     luaL_newlib(L, TopLevel);
 
+    // TODO: mod.freq = 220
+    // TODO: mod.freq = fma.out
+    // TODO: rk.Sine(fma.out)
+    // TODO: GC Tests
+    // TODO: rk.Sine(220) | rk.LFO(440, 80) | rk.Sine() | rk.Master
+    // TODO: mod:play(2000)
     STORE_TABLE(modules,
         STORE_TABLE(types, 
             STORE_MC(Sine)
