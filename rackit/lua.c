@@ -46,7 +46,9 @@ static int lua_Module_new(lua_State *L) {
 int str_to_pos(lua_State *L, int ind) {
     const char *index = luaL_checkstring(L, ind);
     STP_CASE(out, 0);
-    STP_CASE(in, 1);
+    STP_CASE(in1, 1); // "foo.in" is forbidden in Lua because "in" is a keyword
+    STP_CASE(in2, 2);
+    STP_CASE(in3, 3);
     STP_CASE(freq, 1);
     STP_CASE(pw, 2);
     STP_CASE(center, 3);
@@ -58,11 +60,50 @@ int str_to_pos(lua_State *L, int ind) {
 static int lua_Module___newindex(lua_State *L) {
     struct Module *m = lua_touserdata(L, 1);
     int pos = lua_isnumber(L, 2) ? luaL_checknumber(L, 2) : str_to_pos(L, 2);
-    Sample value = luaL_checknumber(L, 3);
-    lua_pop(L, 3);
-
-    Port_set_constant(&m->ports[pos], value);
+    Port* port = &m->ports[pos];
+    if (lua_isnumber(L, 3)) {
+        Sample value = luaL_checknumber(L, 3); lua_pop(L, 3);
+        Port_set_constant(port, value);
+    } else {
+        lua_getfield(L, 3, "module"); // 4
+        lua_getfield(L, 3, "pos"); // 5
+        Port_set_patch(port, lua_touserdata(L, 4), luaL_checknumber(L, 5));
+    }
     return 0;
+}
+
+
+static int lua_Port_new(lua_State *L);
+static int lua_Module___index(lua_State *L) {
+    return lua_Port_new(L);
+}
+
+static int lua_Port_new(lua_State *L) {
+    struct Module *m = lua_touserdata(L, 1);
+    int pos = lua_isnumber(L, 2) ? luaL_checknumber(L, 2) : str_to_pos(L, 2);
+    lua_newtable(L);
+    lua_rotate(L, 1, 1);
+    // table | m | pos
+
+    luaL_getmetatable(L, "Port"); // +mt
+    lua_setmetatable(L, 1); // -mt
+
+    // Fix position
+    lua_pop(L, 1);
+    lua_pushnumber(L, pos);
+
+    lua_setfield(L, 1, "pos"); // -pos
+    lua_setfield(L, 1, "module"); // -m
+    return 1;
+}
+static int lua_Port_is_patched(lua_State *L) {
+    lua_getfield(L, 1, "module"); // 2
+    lua_getfield(L, 1, "pos"); // 3
+    struct Module *m = lua_touserdata(L, 2);
+    Port* port = &m->ports[(int)luaL_checknumber(L, 3)];
+
+    lua_pushboolean(L, port->is_patched);
+    return 1;
 }
 
 static const struct luaL_Reg TopLevel[] = {
@@ -94,11 +135,13 @@ static const struct luaL_Reg TopLevel[] = {
     lua_pushcfunction(L, lua_ ## class ## _ ## name); \
     lua_setfield(L, -2, #name)
 
+#define SELF_INDEX \
+    lua_pushvalue(L, -1); \
+    lua_setfield(L, -2, "__index")
+
 int luaopen_rackit (lua_State *L) {
     luaL_newlib(L, TopLevel);
 
-    // TODO: mod.freq getter
-    // TODO: mod.freq = fma.out (patch setter support)
     // TODO: rk.Sine(fma.out)
     // TODO: GC Tests
     // TODO: rk.Sine(220) | rk.LFO(440, 80) | rk.Sine() | rk.Master
@@ -112,6 +155,11 @@ int luaopen_rackit (lua_State *L) {
     );
     STORE_METATABLE(Module,
         STORE_METHOD(Module, __newindex);
+        STORE_METHOD(Module, __index);
+    );
+    STORE_METATABLE(Port,
+        STORE_METHOD(Port, is_patched);
+        SELF_INDEX;
     );
 
     return 1;
