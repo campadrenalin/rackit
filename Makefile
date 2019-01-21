@@ -7,6 +7,7 @@ rackit_test: dist/rackit.so
 
 test:
 	clang test/main.c vendor/unity/src/unity.c -I vendor/unity/src -o test/runner.out \
+		-fPIC -llua -I/usr/local/include/lua \
 		-I/Library/Frameworks/SDL2.framework/ -lSDL2
 	test/runner.out
 

@@ -22,7 +22,6 @@ void Port_set_constant(Port *p, Sample value) {
 
 void Port_reset(Port *p) { Port_set_constant(p, 0); }
 
-// TODO: use a header file to get declarations early
 Buffer *Port_find_buffer(Port *p) {
     if (p->is_patched) {
         Port *foreign = &p->patch.module->ports[p->patch.port];
@@ -98,3 +97,5 @@ DEF_MC(FMA) {
     for (int i=0; i<length; i++)
         OUT = (IN*SCALE) + CENTER;
 };
+
+// TODO: Container Module
