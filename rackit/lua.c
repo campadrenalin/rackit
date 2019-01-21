@@ -97,11 +97,11 @@ static const struct luaL_Reg TopLevel[] = {
 int luaopen_rackit (lua_State *L) {
     luaL_newlib(L, TopLevel);
 
-    // TODO: mod.freq = fma.out
+    // TODO: mod.freq getter
+    // TODO: mod.freq = fma.out (patch setter support)
     // TODO: rk.Sine(fma.out)
     // TODO: GC Tests
     // TODO: rk.Sine(220) | rk.LFO(440, 80) | rk.Sine() | rk.Master
-    // TODO: mod:play(2000)
     STORE_TABLE(modules,
         STORE_TABLE(types, 
             STORE_MC(Sine);
@@ -116,3 +116,23 @@ int luaopen_rackit (lua_State *L) {
 
     return 1;
 }
+
+/* LOVE2D planning notes:
+ *
+ * -- At init
+ * buffercount = 8
+ * source = love.audio.newQueueableSource(samplerate, bitdepth, channels, buffercount-1)
+ * buffers = {} -- SoundData objects
+ * for i=1,buffercount do
+ *   buffers[i] = love.sound.newSoundData(samples, rate, bits, channels)
+ * end
+ * buf_next = 1
+ *
+ * -- In game loop
+ * while source:getFreeBufferCount() > 1 do
+ *   buffer = buffers[buf_next]
+ *   buf_next = (buf_next % buffercount)+1
+ *   rackit.fill_love_buffer(mod, buffer:getPointer())
+ *   source:queue(buffer)
+ * end
+ */
