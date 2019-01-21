@@ -39,6 +39,8 @@ void test_Lua_module_play_sin(void) {
     TEST_LUA_ASSERT("type(mod) == 'userdata'");
     LUA_EXEC("rk.sdl_init()");
     LUA_EXEC("rk.sdl_play(mod, 200)");
+    LUA_EXEC("mod[1] = 480");
+    LUA_EXEC("rk.sdl_play(mod, 200)");
     LUA_EXEC("rk.sdl_finish()");
 }
 

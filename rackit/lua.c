@@ -23,35 +23,62 @@ static int lua_sdl_play(lua_State *L) {
 }
 
 static int lua_Module_new(lua_State *L) {
-    ModuleCallback callback = lua_touserdata(L, 1);
-    int num_ports = lua_gettop(L) - 1;
+    // mt | callback | port...
+    ModuleCallback callback = lua_touserdata(L, 2);
+    int num_ports = lua_gettop(L) - 2;
 
+    // Create userdata and set metatable
     Module *m = lua_newuserdata(L, ModuleSize(num_ports));
+    lua_pushvalue(L, 1);
+    lua_setmetatable(L, -2);
+    lua_rotate(L, 1, 1);
+
     m->process_cb = callback;
     m->num_ports = num_ports;
-    for (int i=0; i<num_ports; i++) {
-        Sample value = luaL_checknumber(L, i+2);
-        Port_set_constant(&m->ports[i], value); // TODO: Support setting patches
-    }
+    for (int i=num_ports-1; i>0; i--) // Set in reverse order, eating from top of stack
+        lua_seti(L, 1, i);
+    lua_pop(L, 3);
     return 1;
+}
+
+static int lua_Module___newindex(lua_State *L) {
+    struct Module *m = lua_touserdata(L, 1);
+    int pos = luaL_checknumber(L, 2);
+    Sample value = luaL_checknumber(L, 3);
+    lua_pop(L, 3);
+
+    Port_set_constant(&m->ports[pos], value);
+    return 0;
 }
 
 static const struct luaL_Reg TopLevel[] = {
     {"sdl_init",   lua_sdl_init},
     {"sdl_play",   lua_sdl_play},
     {"sdl_finish", lua_sdl_finish},
-    {"Module",     lua_Module_new},
     {NULL,NULL} // Sentinel value
 };
 
 #define STORE_MC(name) \
     lua_pushlightuserdata(L, & MC(name)); \
-    lua_setfield(L, -2, #name);
+    lua_setfield(L, -2, #name)
 
 #define STORE_TABLE(name, ...) \
     lua_newtable(L); \
     __VA_ARGS__ \
-    lua_setfield(L, -2, #name);
+    lua_setfield(L, -2, #name)
+
+#define STORE_METATABLE(CLASSNAME, ...) \
+    luaL_newmetatable(L, #CLASSNAME); \
+    __VA_ARGS__ \
+    lua_pushcfunction(L, lua_ ## CLASSNAME ## _new); \
+    lua_setfield(L, -2, "__call"); \
+    lua_pushvalue(L, -1); \
+    lua_setmetatable(L, -2); \
+    lua_setfield(L, -2, #CLASSNAME)
+
+#define STORE_METHOD(class, name) \
+    lua_pushcfunction(L, lua_ ## class ## _ ## name); \
+    lua_setfield(L, -2, #name)
 
 int luaopen_rackit (lua_State *L) {
     luaL_newlib(L, TopLevel);
@@ -64,11 +91,15 @@ int luaopen_rackit (lua_State *L) {
     // TODO: mod:play(2000)
     STORE_TABLE(modules,
         STORE_TABLE(types, 
-            STORE_MC(Sine)
-            STORE_MC(Saw)
-            STORE_MC(Square)
-            STORE_MC(FMA)
-        )
-    )
+            STORE_MC(Sine);
+            STORE_MC(Saw);
+            STORE_MC(Square);
+            STORE_MC(FMA);
+        );
+    );
+    STORE_METATABLE(Module,
+        STORE_METHOD(Module, __newindex);
+    );
+
     return 1;
 }
