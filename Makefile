@@ -1,9 +1,7 @@
 src = $(wildcard rackit/*.c) $(wildcard rackit/modules/*.c) \
       $(wildcard rackit/*.h) $(wildcard rackit/modules/*.h)
 
-.PHONY: rackit_test test clean
-rackit_test: dist/rackit.so
-	@cd dist; lua test.lua
+.PHONY: test clean
 
 test:
 	clang test/main.c vendor/unity/src/unity.c -I vendor/unity/src -o test/runner.out \
