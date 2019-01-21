@@ -41,9 +41,23 @@ static int lua_Module_new(lua_State *L) {
     return 1;
 }
 
+#define STP_CASE(name, result) \
+    if (strcmp(index, #name) == 0) return result;
+int str_to_pos(lua_State *L, int ind) {
+    const char *index = luaL_checkstring(L, ind);
+    STP_CASE(out, 0);
+    STP_CASE(in, 1);
+    STP_CASE(freq, 1);
+    STP_CASE(pw, 2);
+    STP_CASE(center, 3);
+    STP_CASE(offset, 3);
+    STP_CASE(scale, 4);
+    return 0;
+}
+
 static int lua_Module___newindex(lua_State *L) {
     struct Module *m = lua_touserdata(L, 1);
-    int pos = luaL_checknumber(L, 2);
+    int pos = lua_isnumber(L, 2) ? luaL_checknumber(L, 2) : str_to_pos(L, 2);
     Sample value = luaL_checknumber(L, 3);
     lua_pop(L, 3);
 
@@ -83,7 +97,6 @@ static const struct luaL_Reg TopLevel[] = {
 int luaopen_rackit (lua_State *L) {
     luaL_newlib(L, TopLevel);
 
-    // TODO: mod.freq = 220
     // TODO: mod.freq = fma.out
     // TODO: rk.Sine(fma.out)
     // TODO: GC Tests

@@ -35,11 +35,13 @@ void test_Lua_module_loaded(void) {
 }
 
 void test_Lua_module_play_sin(void) {
-    LUA_EXEC("mod = rk.Module(rk.modules.types.Sine, 0, 440)");
+    LUA_EXEC("mod = rk.Module(rk.modules.types.Sine, 0, 440)"); // A4
     TEST_LUA_ASSERT("type(mod) == 'userdata'");
     LUA_EXEC("rk.sdl_init()");
     LUA_EXEC("rk.sdl_play(mod, 200)");
-    LUA_EXEC("mod[1] = 480");
+    LUA_EXEC("mod[1] = 392"); // G4
+    LUA_EXEC("rk.sdl_play(mod, 200)");
+    LUA_EXEC("mod.freq = 523.25"); // C5
     LUA_EXEC("rk.sdl_play(mod, 200)");
     LUA_EXEC("rk.sdl_finish()");
 }
