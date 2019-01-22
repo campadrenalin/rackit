@@ -1,3 +1,4 @@
+#include "sdl.c"
 #include "core.c"
 #include "lua.h"
 #include "lualib.h"
@@ -83,7 +84,7 @@ static int lua_Module_ ## name (lua_State *L) { \
     int next = 1; \
     __VA_ARGS__ \
     luaL_getmetatable(L, "Module"); \
-    lua_pushlightuserdata(L, & MC(Sine)); \
+    lua_pushlightuserdata(L, & MC(name)); \
     lua_pushnumber(L, 0); \
     lua_rotate(L, 1, 3); \
     /* mt | callback | 0 (out) | params */ \
@@ -188,9 +189,6 @@ static const struct luaL_Reg TopLevel[] = {
 int luaopen_rackit (lua_State *L) {
     luaL_newlib(L, TopLevel);
 
-    // TODO: Revive testing from lua script
-    // TODO: rk.Sine(220) | rk.LFO(440, 80) | rk.Sine() | rk.Master
-    // TODO: GC Tests
     STORE_METHOD(Module, Sine);
     STORE_METHOD(Module, Saw);
     STORE_METHOD(Module, Square);
@@ -216,6 +214,8 @@ int luaopen_rackit (lua_State *L) {
     return 1;
 }
 
+// TODO: rk.Sine(220) | rk.LFO(440, 80) | rk.Sine() | rk.Master
+// TODO: GC Tests
 /* LOVE2D planning notes:
  *
  * -- At init

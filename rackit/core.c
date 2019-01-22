@@ -1,6 +1,7 @@
 #pragma once
 #import "core.h"
 #import "stdlib.h"
+#import "math.h"
 
 // Buffer Class ================================================================
 void Buffer_fill(Buffer *buf, Sample value) {
@@ -98,5 +99,7 @@ DEF_MC(FMA) {
         OUT = (IN*SCALE) + CENTER;
 };
 
+// TODO: Mixer
 // TODO: Container Module, LFO in particular
 // TODO: ADSR
+// TODO: Sequencer
