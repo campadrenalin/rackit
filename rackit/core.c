@@ -67,6 +67,13 @@ void Module_process(struct Module *m, int length, long time) {
 #define CENTER (*center)[i]
 #define SCALE  (*scale)[i]
 
+/* The golden rule of repeated sums (accumulation) in floating point?
+ * Don't mix small numbers with big numbers.
+ * Small with small, big with big.
+ * This design philosophy is how we get decent accuracy here.
+ *
+ * When writing a formula, phase is always in [0, 1) range.
+ */
 #define OSCILLATOR(formula) { \
     Buffer *out, *freq, *pw; \
     out = Module_buffer(m, 0); \
