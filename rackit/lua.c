@@ -35,27 +35,66 @@ static int lua_Module_new(lua_State *L) {
 
     m->process_cb = callback;
     m->num_ports = num_ports;
-    for (int i=num_ports-1; i>0; i--) // Set in reverse order, eating from top of stack
+    for (int i=num_ports-1; i>=0; i--) // Set in reverse order, eating from top of stack
         lua_seti(L, 1, i);
-    lua_pop(L, 3);
+    lua_pop(L, 2);
     return 1;
 }
 
-#define STP_CASE(name, result) \
-    if (strcmp(index, #name) == 0) return result;
+struct ParamName {
+    const char* name;
+    int port_num;
+    Sample default_value;
+};
+static struct ParamName std_params[] = {
+    {"out", 0, 0},
+    {"in1", 1, 0}, // "foo.in" is forbidden in Lua because "in" is a keyword
+    {"in2", 2, 0},
+    {"in3", 3, 0},
+    {"freq", 1, 440}, // A4
+    {"pw",   2, 0.5},
+    {"center", 2, 0},
+    {"offset", 2, 0},
+    {"scale",  3, 1},
+    {NULL, 0, 0}, // Sentinel value
+};
+
+struct ParamName *find_pn(const char* index) {
+    struct ParamName *pn;
+    for (pn = &std_params[0]; pn->name != NULL; pn++) {
+        if (strcmp(index, pn->name) == 0)
+            return pn;
+    }
+    return pn;
+}
+
 int str_to_pos(lua_State *L, int ind) {
     const char *index = luaL_checkstring(L, ind);
-    STP_CASE(out, 0);
-    STP_CASE(in1, 1); // "foo.in" is forbidden in Lua because "in" is a keyword
-    STP_CASE(in2, 2);
-    STP_CASE(in3, 3);
-    STP_CASE(freq, 1);
-    STP_CASE(pw, 2);
-    STP_CASE(center, 3);
-    STP_CASE(offset, 3);
-    STP_CASE(scale, 4);
-    return 0;
+    return find_pn(index)->port_num;
 }
+
+#define P(name) \
+    if (top < next++) \
+        lua_pushnumber(L, find_pn(#name)->default_value);
+
+#define MOD_CONSTRUCTOR(name, ...) \
+static int lua_Module_ ## name (lua_State *L) { \
+    int top = lua_gettop(L); \
+    int next = 1; \
+    __VA_ARGS__ \
+    luaL_getmetatable(L, "Module"); \
+    lua_pushlightuserdata(L, & MC(Sine)); \
+    lua_pushnumber(L, 0); \
+    lua_rotate(L, 1, 3); \
+    /* mt | callback | 0 (out) | params */ \
+    return lua_Module_new(L); \
+}
+
+MOD_CONSTRUCTOR(Sine,   P(freq));
+MOD_CONSTRUCTOR(Saw,    P(freq));
+MOD_CONSTRUCTOR(Square, P(freq));
+MOD_CONSTRUCTOR(FMA,    P(in1); P(center); P(scale));
+#undef P
 
 static int lua_Module___newindex(lua_State *L) {
     struct Module *m = lua_touserdata(L, 1);
@@ -71,7 +110,6 @@ static int lua_Module___newindex(lua_State *L) {
     }
     return 0;
 }
-
 
 static int lua_Port_new(lua_State *L);
 static int lua_Module___index(lua_State *L) {
@@ -103,6 +141,14 @@ static int lua_Port_is_patched(lua_State *L) {
     Port* port = &m->ports[(int)luaL_checknumber(L, 3)];
 
     lua_pushboolean(L, port->is_patched);
+    return 1;
+}
+static int lua_Port_value(lua_State *L) {
+    lua_getfield(L, 1, "module"); // 2
+    lua_getfield(L, 1, "pos"); // 3
+    struct Module *m = lua_touserdata(L, 2);
+    Port* port = &m->ports[(int)luaL_checknumber(L, 3)];
+    lua_pushnumber(L, port->buf.buf[0]);
     return 1;
 }
 
@@ -142,9 +188,13 @@ static const struct luaL_Reg TopLevel[] = {
 int luaopen_rackit (lua_State *L) {
     luaL_newlib(L, TopLevel);
 
-    // TODO: rk.Sine(fma.out)
-    // TODO: GC Tests
+    // TODO: Revive testing from lua script
     // TODO: rk.Sine(220) | rk.LFO(440, 80) | rk.Sine() | rk.Master
+    // TODO: GC Tests
+    STORE_METHOD(Module, Sine);
+    STORE_METHOD(Module, Saw);
+    STORE_METHOD(Module, Square);
+    STORE_METHOD(Module, FMA);
     STORE_TABLE(modules,
         STORE_TABLE(types, 
             STORE_MC(Sine);
@@ -159,6 +209,7 @@ int luaopen_rackit (lua_State *L) {
     );
     STORE_METATABLE(Port,
         STORE_METHOD(Port, is_patched);
+        STORE_METHOD(Port, value);
         SELF_INDEX;
     );
 

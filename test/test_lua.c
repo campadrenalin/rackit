@@ -34,9 +34,24 @@ void test_Lua_module_loaded(void) {
     TEST_LUA_ASSERT("type(rk.modules.types.FMA)  == 'userdata'");
 }
 
+void test_Lua_module_constructors(void) {
+    TEST_LUA_ASSERT("type(rk.Sine) == 'function'");
+    LUA_EXEC("sin = rk.Sine()");
+    TEST_LUA_ASSERT("sin.out:value() == 0, 'Got: ' .. sin.out:value()");
+    TEST_LUA_ASSERT("sin.freq:value() == 440");
+    LUA_EXEC("sin = rk.Sine(50)");
+    TEST_LUA_ASSERT("sin.out:value() == 0, 'Got: ' .. sin.out:value()");
+    TEST_LUA_ASSERT("sin.freq:value() == 50");
+    LUA_EXEC("fma = rk.FMA(sin.out, 40)");
+    TEST_LUA_ASSERT("fma.out:value() == 0, 'Got: ' .. fma.out:value()");
+    TEST_LUA_ASSERT("fma.freq:is_patched() == true");
+    TEST_LUA_ASSERT("fma.center:value() == 40, 'Got: ' .. fma.center:value()");
+    TEST_LUA_ASSERT("fma.scale:value()  == 1, 'Got: ' .. fma.scale:value()");
+}
+
 void test_Lua_get_port(void) {
-    LUA_EXEC("sin = rk.Module(rk.modules.types.Sine, 0, 440)");
-    LUA_EXEC("saw = rk.Module(rk.modules.types.Saw,  0, 440)");
+    LUA_EXEC("sin = rk.Sine()");
+    LUA_EXEC("saw = rk.Saw()");
     LUA_EXEC("port = saw[1]");
     TEST_LUA_ASSERT("type(port) == 'table'");
     TEST_LUA_ASSERT("type(getmetatable(port).is_patched) == 'function'");
@@ -68,6 +83,7 @@ void test_Lua_play_sin(void) {
 
 void test_Lua(void) {
     RUN_LUA_TEST(test_Lua_module_loaded);
+    RUN_LUA_TEST(test_Lua_module_constructors);
     RUN_LUA_TEST(test_Lua_get_port);
     RUN_LUA_TEST(test_Lua_module_new_patched);
     RUN_LUA_TEST(test_Lua_play_sin);
